@@ -1,0 +1,84 @@
+Linux kernel
+============
+
+There are several guides for kernel developers and users. These guides can
+be rendered in a number of formats, like HTML and PDF. Please read
+Documentation/admin-guide/README.rst first.
+
+In order to build the documentation, use ``make htmldocs`` or
+``make pdfdocs``.  The formatted documentation can also be read online at:
+
+    https://www.kernel.org/doc/html/latest/
+
+There are various text files in the Documentation/ subdirectory,
+several of them using the Restructured Text markup notation.
+
+Please read the Documentation/process/changes.rst file, as it contains the
+requirements for building and running the kernel, and information about
+the problems which may result by upgrading your kernel.
+
+https://daimajiaoliu.com/daima/569eac9eb656405
+
+每个CPU时钟周期都会对count - 1，当减为0时出发一个时钟中断。
+pit_timer_init
+https://blog.csdn.net/Rong_Toa/article/details/115350561
+
+The freq parameter shows us how many timer interrupts will be occurred in one second.
+```c
+hpet_enable 计算了hpet_freq参数，就是后面的时钟中断频率
+  clocksource_register_hz
+    __clocksource_update_freq_scale
+```
+
+freq = FSEC_PER_SEC;
+do_div(freq, hpet_period);
+hpet_freq = freq;
+
+FSEC_PER_SEC = 1e15  long long
+
+https://www.zhihu.com/column/c_1242535902247120896  参考这个对时钟源修改的实验
+
+现在cpu有高精度定时器HPET，在I/O APIC里面。之前讲启动其他CPU的时候有用到lapic，lapic为一个核心一个，I/O APIC在芯片组里面。之前的32位系统一般通过8259中断控制器，64位一般通过I/O APIC来管理中断以及时钟跟时钟中断。
+
+https://rootw.github.io/2018/02/%E6%97%B6%E9%92%9F%E4%B8%AD%E6%96%AD/
+
+https://blog.csdn.net/lqy971966/article/details/110234641 各种周期的区别
+
+apic.c  __setup_APIC_LVTT函数中修改 TDCR寄存器
+
+https://richardweiyang-2.gitbook.io/kernel-exploring/00-start_from_hardware/06-apic
+
+周期触发模式（Periodic Mode）
+周期触发模式中，程序设置一个”初始计数“寄存器（Initial Count），同时Local APIC会将这个数复制到”当前计数“寄存器（Current Count）。Local APIC会将这个数（当前计数）递减，直到减到0为止，这时候将触发一个IRQ（可以理解为触发一次中断），与此同时将当前计数恢复到初始计数寄存器的值，然后周而复始的执行上述逻辑。可以使用这种方法通过Local APIC实现定时按照一定时间间隔触发中断的功能。”当前计数“寄存器中的值的递减速度依赖于当前CPU的主频除以一个叫做”分频寄存器“（“Divide Configuration Register”）的值（换个思路来说就是，多少个tick减少1）。
+
+举例来说，对于一个2.4GHz的CPU使用的CPU总线频率是800MHz（大家说的外频800MHz)，”分频寄存器“（“Divide Configuration Register”）设置的是“除四”（”divide by 4“），并且初始计数（initial count）设置到123456。那么结果就是当前计数（current count）每200M分之1秒减1，大约617.28us触发一个irq(一次中断)，也就是1620.01Hz。
+
+
+```
+  Timer related:
+
+      CCR: Current Count Register
+      ICR: Initial Count Register
+      DCR: Divide Configuration Register
+      Timer: in LVT
+
+  LVT (Local Vector Table):
+
+      Timer
+      Local Interrupt
+      Performance Monitor Counters
+      Thermal Sensor
+      Error
+
+  IPI:
+
+      ICR: Interrupt Command Register
+      LDR: Logical Destination Register
+      DFR: Destination Format Register
+
+  Interrupt State:
+
+      ISR: In-Service Register
+      IRR: Interrupt Request Register
+      TMR: Trigger Mode Register
+```
