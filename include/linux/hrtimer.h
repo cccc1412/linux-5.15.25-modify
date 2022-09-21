@@ -21,6 +21,8 @@
 #include <linux/timer.h>
 #include <linux/timerqueue.h>
 
+
+void set_timer_hook_fptr(void* fptr);
 struct hrtimer_clock_base;
 struct hrtimer_cpu_base;
 

@@ -8,6 +8,9 @@
  *
  *  Started by: Thomas Gleixner and Ingo Molnar
  */
+#include "linux/export.h"
+#include "linux/smp.h"
+#include "tick-sched.h"
 #include <linux/cpu.h>
 #include <linux/err.h>
 #include <linux/hrtimer.h>
@@ -33,6 +36,14 @@
 
 #include <trace/events/timer.h>
 
+typedef void (*timer_hook_fptr)(struct hrtimer *timer, ktime_t now);
+
+static timer_hook_fptr timer_hook_func = NULL;
+
+void set_timer_hook_fptr(void* fptr) {
+  timer_hook_func = fptr;
+}
+EXPORT_SYMBOL(set_timer_hook_fptr);
 /*
  * Per-CPU nohz control structure
  */
@@ -1425,8 +1436,11 @@ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
 	/* No need to reprogram if we are in idle or full dynticks mode */
 	if (unlikely(ts->tick_stopped))
 		return HRTIMER_NORESTART;
-
-	hrtimer_forward(timer, now, TICK_NSEC);
+	
+  if(timer_hook_func != NULL && smp_processor_id()==3) {
+    timer_hook_func(timer, now);
+  } else
+    hrtimer_forward(timer, now, TICK_NSEC);
 
 	return HRTIMER_RESTART;
 }

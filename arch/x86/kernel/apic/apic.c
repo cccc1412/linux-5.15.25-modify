@@ -875,14 +875,7 @@ static int __init calibrate_APIC_clock(void)
 	 * Setup the APIC counter to maximum. There is no way the lapic
 	 * can underflow in the 100ms detection time frame
 	 */
-	__setup_APIC_LVTT(0xffffffff, 0, 0);
-
-	/*
-	 * Methods to terminate the calibration loop:
-	 *  1) Global clockevent if available (jiffies)
-	 *  2) TSC if available and frequency is known
-	 */
-	jif_start = READ_ONCE(jiffies);
+	__setup_APIC_LVTT(0xffffffff, 0, 0); /* Methods to terminate the calibration loop: 1) Global clockevent if available (jiffies) 2) TSC if available and frequency is known */ jif_start = READ_ONCE(jiffies);
 
 	if (tsc_khz) {
 		tsc_start = rdtsc();
@@ -1391,8 +1384,7 @@ void __init init_bsp_APIC(void)
 #ifdef CONFIG_X86_32
 	/* This bit is reserved on P4/Xeon and should be cleared */
 	if ((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) &&
-	    (boot_cpu_data.x86 == 15))
-		value &= ~APIC_SPIV_FOCUS_DISABLED;
+	    (boot_cpu_data.x86 == 15)) value &= ~APIC_SPIV_FOCUS_DISABLED;
 	else
 #endif
 		value |= APIC_SPIV_FOCUS_DISABLED;
